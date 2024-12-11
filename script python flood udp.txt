@@ -1,0 +1,312 @@
+Come prima cosa ho importato diversi moduli :
+
+1. import random
+
+Il modulo random fornisce funzioni per generare numeri casuali. È utile quando vuoi ottenere numeri casuali, scegliere valori a caso o creare sequenze casuali.
+
+
+random.randint(a, b): Restituisce un numero intero casuale tra a e b (inclusi).
+
+2. import socket
+Il modulo socket permette di lavorare con le connessioni di rete in Python. Viene usato per creare e gestire socket, che sono endpoints di comunicazione per inviare e ricevere dati sulla rete.
+
+
+socket.socket(family, type): Crea un nuovo socket. I parametri più comuni sono:
+family: specifica il tipo di rete (di solito AF_INET per IPv4).
+type: specifica il tipo di connessione, come SOCK_STREAM (TCP) o SOCK_DGRAM (UDP).
+
+3. from multiprocessing import Process
+Il modulo multiprocessing fornisce un'interfaccia per eseguire operazioni in parallelo su più processi. La classe Process consente di creare nuovi processi paralleli per eseguire codice in modo indipendente.
+
+Alcune operazioni di multiprocessing includono:
+
+Process(target=funzione): Crea un nuovo processo che esegue la funzione specificata.
+process.start(): Avvia il processo creato.
+
+4. import os
+Il modulo os fornisce una serie di funzioni per interagire con il sistema operativo. Tra le funzioni più comuni ci sono quelle per lavorare con i file, ottenere informazioni sui processi e navigare nel file system.
+
+Alcune funzioni di os includono:
+
+os.getpid(): Restituisce l'ID del processo corrente.
+Nel  codice, os.getpid() viene utilizzato per ottenere l'ID del processo che sta eseguendo l'attacco, così che il programma possa stampare quale processo sta inviando pacchetti.
+
+5. from argparse import ArgumentParser
+Il modulo argparse è una libreria che consente di analizzare gli argomenti passati da riga di comando al programma. Il modulo rende semplice definire, analizzare e validare gli argomenti passati da un utente quando esegue lo script.
+
+ArgumentParser(): Crea un oggetto per gestire gli argomenti da riga di comando.
+
+parse_args(): Analizza gli argomenti passati e restituisce un oggetto contenente i valori.
+Nel , ArgumentParser viene utilizzato per definire gli argomenti che l'utente può passare quando esegue lo script, come l'IP di destinazione, il tipo di protocollo (UDP o TCP), il numero di pacchetti, il timeout, ecc.
+
+6. import datetime
+Il modulo datetime fornisce classi per manipolare date e orari. Consente di eseguire operazioni come ottenere la data e l'ora correnti, fare calcoli tra date, e formattare date in modo leggibile.
+
+Le funzioni principali includono:
+
+datetime.datetime.now(): Restituisce l'oggetto datetime che rappresenta la data e l'ora correnti.
+datetime.datetime.now() viene utilizzato per memorizzare l'ora in cui inizia l'attacco, in modo da calcolare quando fermarlo dopo un certo timeout.
+
+Sintesi di come operano insieme:
+random genera numeri casuali (ad esempio, per scegliere una porta casuale).
+-socket crea i socket e invia i pacchetti al target (UDP o TCP).
+-multiprocessing.Process consente di eseguire più istanze dell'attacco in parallelo.
+-os fornisce informazioni sul processo in esecuzione.
+-argparse consente di passare parametri da riga di comando per configurare l'attacco.
+-datetime viene utilizzato per calcolare il timeout dell'attacco e registrare la durata.
+
+1
+
+
+random.getrandbits(8*1024):
+
+
+signed=False: Indica che il numero intero non è "signed" (non ha il segno). Questo vuol dire che viene trattato come un numero senza segno (positivi), quindi il valore più basso che può essere rappresentato è 0.
+ 
+
+2. now = datetime.datetime.now()
+Questa riga di codice acquisisce il tempo attuale al momento in cui viene chiamata la funzione flood. Viene utilizzata la libreria datetime, che è molto utile per lavorare con date e ore.
+
+datetime.datetime.now():
+ while True:
+        port = random.randint(port_from, port_to)
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM if udp else socket.SOCK_STREAM)
+            addr = (str(ip), int(port))
+            for _ in range(times):
+                s.sendto(data, addr)
+            print("Sent to " + str(port) + " process " + str(os.getpid()))
+            if (datetime.datetime.now() - now).total_seconds() > timeout:
+                break
+        except Exception as err:
+            print("Error " + str(err))
+
+Questa parte del codice si occupa di inviare pacchetti in modo continuo (flooding) verso l'indirizzo IP di destinazione utilizzando un socket UDP (o TCP, a seconda della scelta dell'utente). Vediamo in dettaglio cosa fa ogni riga del ciclo while True:
+
+1. while True:
+Inizia un ciclo infinito. Questo significa che il codice all'interno di questo ciclo continuerà a ripetersi senza fermarsi, finché non verrà esplicitamente interrotto tramite una condizione break o un errore.
+In questo caso, l'invio di pacchetti avviene continuamente fino a quando non si verifica un timeout, e quindi il ciclo verrà interrotto.
+2. port = random.randint(port_from, port_to)
+random.randint(port_from, port_to): Seleziona una porta casuale nell'intervallo che va da port_from a port_to. Ogni volta che il ciclo viene eseguito, viene scelta una porta differente per inviare il pacchetto. Questo serve a simulare un attacco più complesso, dove i pacchetti vengono inviati su porte casuali all'interno dell'intervallo specificato.
+port: La variabile port memorizza il valore della porta selezionata casualmente.
+3. try:
+Il blocco try viene utilizzato per eseguire il codice al suo interno, ma per gestire eventuali errori che potrebbero verificarsi. Se c'è un errore (ad esempio, un problema di rete), l'errore verrà catturato e gestito nel blocco except.
+4. s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM if udp else socket.SOCK_STREAM)
+socket.socket(): Crea un nuovo socket.
+socket.AF_INET: Imposta il tipo di famiglia del socket su IPv4 (protocolli di rete che utilizzano gli indirizzi IP versione 4).
+socket.SOCK_DGRAM if udp else socket.SOCK_STREAM:
+Se udp è True, crea un socket di tipo UDP (SOCK_DGRAM), che è utilizzato per inviare pacchetti senza connessione (connessioni senza stato).
+Se udp è False, crea un socket di tipo TCP (SOCK_STREAM), che invece utilizza una connessione stabile e orientata alla connessione.
+La variabile s è ora un oggetto socket, che può essere utilizzata per inviare dati.
+
+5. addr = (str(ip), int(port))
+addr è una tupla che rappresenta l'indirizzo di destinazione. Contiene:
+str(ip): L'indirizzo IP di destinazione, convertito in formato stringa.
+int(port): La porta di destinazione, convertita in intero.
+La tupla addr è quella che specifica dove inviare i pacchetti.
+6. for _ in range(times):
+Questo è un ciclo che si ripete times volte. Ogni volta che il ciclo viene eseguito, invierà un pacchetto al target. La variabile _ è usata comunemente quando non si ha bisogno di utilizzare l'indice del ciclo.
+7. s.sendto(data, addr)
+s.sendto(data, addr): Invio del pacchetto di dati al destinatario.
+data è il contenuto del pacchetto che è stato generato precedentemente (i dati casuali).
+addr è la tupla che contiene l'indirizzo IP e la porta di destinazione.
+Ogni volta che il ciclo for viene eseguito, il pacchetto data viene inviato alla destinazione specificata da addr (l'IP e la porta).
+
+8. print("Sent to " + str(port) + " process " + str(os.getpid()))
+Dopo aver inviato i pacchetti, questa riga di codice stampa un messaggio che indica:
+La porta a cui sono stati inviati i pacchetti.
+L'ID del processo che sta inviando i pacchetti (ottenuto tramite os.getpid()).
+Questo serve per il logging e per monitorare quale processo sta inviando i pacchetti e a quale porta.
+9. if (datetime.datetime.now() - now).total_seconds() > timeout:
+datetime.datetime.now(): Ottiene l'ora corrente.
+(datetime.datetime.now() - now): Calcola la differenza di tempo tra l'ora corrente e l'ora di inizio salvata in now (che è stata registrata prima che iniziassero a venire inviati i pacchetti).
+.total_seconds(): Converte la differenza di tempo in secondi.
+if ... > timeout:: Se il tempo trascorso è maggiore di timeout, il ciclo while si interrompe utilizzando break.
+Questo controllo serve a fermare l'attacco dopo un determinato periodo di tempo. Il valore timeout è definito dall'utente e, quando il tempo di esecuzione dell'attacco supera questo valore, il ciclo si interrompe.
+
+10. except Exception as err:
+Se si verifica un errore all'interno del blocco try, questo errore viene catturato dal blocco except.
+Exception as err: Cattura qualsiasi tipo di eccezione che si verifica e la memorizza nella variabile err.
+print("Error " + str(err)): Stampa il messaggio di errore. Questo serve a diagnosticare eventuali problemi (ad esempio, problemi di rete o errori nei parametri).
+Sintesi del funzionamento:
+Il ciclo infinito while True invia pacchetti di dati a un indirizzo IP e a una porta selezionata casualmente.
+I pacchetti vengono inviati usando un socket UDP o TCP, a seconda del parametro udp.
+Ogni pacchetto è inviato ripetutamente per un numero definito di volte (times), e il programma stampa informazioni su quale processo sta inviando i pacchetti e a quale porta.
+Il ciclo si interrompe quando il tempo di esecuzione supera il timeout definito.
+Se c'è un errore durante l'invio dei pacchetti, il programma lo cattura e lo stampa.
+Questo codice è una parte fondamentale per simulare un attacco di tipo flood, dove vengono inviati pacchetti a una destinazione per sovraccaricarla.
+
+
+
+Per inviare pacchetti UDP di 1 KB (Kilobyte), bisogna assicurarsi che il contenuto dei pacchetti sia di 1024 byte (dato che 1 KB è equivalente a 1024 byte). 
+Modifica del codice per inviare pacchetti di 1 KB
+Per farlo, bisognai modificare la generazione dei dati (il payload) che vengono inviati nel pacchetto UDP, affinché abbiano una lunghezza di 1024 byte.
+
+
+data = random.getrandbits(8 * 1024).to_bytes(1024, byteorder="big")
+
+
+Questa funzione genera un numero intero casuale con 8 * 1024 bit (ossia 8192 bit). Questo equivale a 1024 byte (1 KB), dato che 1 byte è 8 bit.
+8 * 1024 rappresenta quindi il numero di bit necessari per creare un pacchetto di 1024 byte.
+.to_bytes(1024, byteorder="big"):
+
+Questa parte converte il numero generato in una sequenza di 1024 byte. Il parametro byteorder="big" indica che i byte saranno ordinati in formato big-endian (con il byte più significativo prima).
+Ora la variabile data conterrà 1024 byte generati casualmente da inviare nei pacchetti UDP.
+   
+    
+Così ora generiamo un numero casuale che corrisponde a 1024 byte (1 KB) utilizzando random.getrandbits(8 * 1024). Questo garantisce che ogni pacchetto inviato contenga esattamente 1024 byte di dati.
+
+L'invio dei pacchetti:  i pacchetti da 1024 byte verranno inviati tramite il socket con la funzione s.sendto(data, addr).
+
+
+
+
+ if __name__ == '__main__':
+
+    parser = ArgumentParser("Simple UDP\\TCP flooder")
+    parser.add_argument("host", help="Host (example: 172.16.3.140")
+    parser.add_argument("--tcp", help="Use TCP (default: use UDP)", action="store_true")
+    parser.add_argument("--port-from", help="Random port min", type=int, default=0)
+    parser.add_argument("--port-to", help="Random port max", type=int, default=65535)
+    parser.add_argument("--packets", help="Packets count per one connection", type=int, default=1000)
+    parser.add_argument("--threads", help="Threads count", type=int, default=1)
+    parser.add_argument("--timeout", help="Word time, sec", type=int, default=30)
+
+
+Questo blocco di codice fa parte della sezione principale del programma ed è utilizzato per gestire gli argomenti della riga di comando quando l'utente esegue lo script. In pratica, il codice definisce quali parametri l'utente può passare quando avvia il programma, e come questi parametri vengono utilizzati nel programma stesso.
+
+Vediamo il significato di ciascuna parte di questo codice in dettaglio:
+
+1. if __name__ == '__main__':
+Questo controllo è una convenzione in Python che garantisce che il codice all'interno del blocco venga eseguito solo quando il file è eseguito direttamente come script, e non quando viene importato come modulo in un altro programma.
+__name__ è una variabile speciale che in un programma Python contiene il nome del modulo. Quando il programma viene eseguito come script principale, __name__ è uguale a '__main__'.
+Quindi, se il file viene eseguito direttamente  il codice all'interno di questo blocco verrà eseguito. Se il file viene importato come modulo in un altro programma, il codice non verrà eseguito automaticamente.
+2. parser = ArgumentParser("Simple UDP\\TCP flooder")
+ArgumentParser è una classe del modulo argparse che viene utilizzata per gestire gli argomenti passati tramite la riga di comando.
+Il parametro "Simple UDP\\TCP flooder" è una descrizione che verrà visualizzata quando l'utente richiederà aiuto per l'uso dello script (python flooder.py --help).
+3. parser.add_argument(...)
+La funzione add_argument viene usata per definire quali argomenti il programma accetta dalla riga di comando. Ogni chiamata a add_argument definisce un argomento che può essere fornito all'esecuzione dello script. Ecco la descrizione dei vari argomenti definiti:
+a. parser.add_argument("host", help="Host (example: 172.16.3.140")
+Questo definisce un argomento obbligatorio che l'utente deve fornire. "host" è l'argomento che rappresenta l'indirizzo IP o il nome dell'host della destinazione (es. 172.16.3.140).
+b. parser.add_argument("--tcp", help="Use TCP (default: use UDP)", action="store_true")
+Questo è un argomento opzionale che indica se l'attacco deve essere eseguito usando TCP invece di UDP.
+action="store_true": Se l'utente fornisce questo argomento (ad esempio, --tcp), allora il valore dell'argomento tcp sarà True. Se non viene fornito, il valore predefinito sarà False (quindi l'attacco sarà UDP).
+Esempio di utilizzo: python flooder.py 172.16.3.140 --tcp.
+c. parser.add_argument("--port-from", help="Random port min", type=int, default=0)
+Questo è un argomento opzionale che definisce la porta minima da cui iniziare a generare le porte casuali.
+type=int indica che il valore deve essere un numero intero.
+default=0 specifica che, se non viene fornito alcun valore, il valore predefinito sarà 0.
+Esempio di utilizzo: python flooder.py 172.16.3.140 --port-from 1000.
+d. parser.add_argument("--port-to", help="Random port max", type=int, default=65535)
+Questo è un argomento opzionale che definisce la porta massima fino alla quale generare porte casuali.
+type=int specifica che deve essere un numero intero.
+default=65535 imposta un valore predefinito che rappresenta la porta più alta possibile.
+Esempio di utilizzo: python flooder.py 172.16.3.140 --port-to 65535.
+e. parser.add_argument("--packets", help="Packets count per one connection", type=int, default=1000)
+Questo è un argomento opzionale che imposta il numero di pacchetti da inviare per ogni connessione.
+type=int indica che deve essere un numero intero.
+default=1000 significa che, se non viene fornito un valore, il numero di pacchetti sarà di 1000.
+Esempio di utilizzo: python flooder.py 172.16.3.140 --packets 500.
+f. parser.add_argument("--threads", help="Threads count", type=int, default=1)
+Questo è un argomento opzionale che specifica il numero di thread da utilizzare per inviare i pacchetti in parallelo.
+type=int indica che deve essere un numero intero.
+default=1 significa che, se non viene fornito un valore, verrà usato 1 thread.
+Esempio di utilizzo: python flooder.py 172.16.3.140 --threads 4.
+g. parser.add_argument("--timeout", help="Word time, sec", type=int, default=30)
+Questo è un argomento opzionale che definisce il timeout in secondi. Dopo questo tempo, l'attacco si interromperà automaticamente.
+type=int indica che il valore deve essere un numero intero.
+default=30 significa che, se non viene fornito un valore, il timeout sarà di 30 secondi.
+Esempio di utilizzo: python flooder.py 172.16.3.140 --timeout 60.
+4. args = parser.parse_args()
+parse_args() analizza gli argomenti passati dalla riga di comando e li salva nella variabile args.
+args è un oggetto che contiene i valori degli argomenti specificati dall'utente. Ogni argomento può essere accessibile come un attributo di args.
+Ad esempio, args.host conterrà l'indirizzo IP passato dall'utente, args.tcp conterrà True se è stato specificato --tcp, e così via.
+Conclusione
+In breve, il codice che hai fornito si occupa di definire e gestire gli argomenti passati dall'utente quando esegue il programma dalla riga di comando. Permette di configurare diversi parametri come:
+
+L'indirizzo IP della destinazione.
+Il tipo di protocollo (UDP o TCP).
+Le porte su cui inviare i pacchetti.
+Il numero di pacchetti da inviare per connessione.
+Il numero di thread da usare per inviare pacchetti in parallelo.
+Il timeout per fermare l'attacco dopo un certo periodo di tempo.
+Questi argomenti consentono una grande flessibilità nell'esecuzione del programma.
+
+
+Per chiedere all'utente quanti pacchetti inviare,si puoi usare la funzione input() in Python, che permette di ottenere una risposta dall'utente nella riga di comando.
+
+
+
+Funzione ask_for_packets_count()
+
+def ask_for_packets_count():
+    while True:
+        try:
+            # Chiede all'utente di inserire il numero di pacchetti da inviare
+            packets_count = int(input("Quanti pacchetti vuoi inviare? "))
+            if packets_count > 0:
+                return packets_count  # Restituisce il numero di pacchetti
+            else:
+                print("Per favore, inserisci un numero maggiore di 0.")
+        except ValueError:
+            print("Per favore, inserisci un numero valido.")
+Dettagli della funzione:
+input(): La funzione input() chiede all'utente di inserire un valore tramite la riga di comando. La risposta dell'utente viene trattata come una stringa.
+int(input()): La risposta dell'utente viene convertita in un numero intero usando int(). Se l'utente inserisce un valore non valido (come una stringa che non può essere convertita in un numero), viene sollevata un'eccezione ValueError.
+Controllo del numero: Se l'utente inserisce un valore non valido (ad esempio un numero negativo o zero), viene chiesto di inserire un numero positivo.
+Loop infinito: La funzione continua a chiedere l'input fino a che l'utente non fornisce un valore valido.
+
+
+
+
+
+
+           
+
+ 
+
+      
+
+
+
+
+
+
+ for _ in range(args.threads):
+        Process(target=flood, args=(args.host, not args.tcp, args.port_from, args.port_to, args.packets,
+                                    args.timeout)).start()
+
+Questo blocco di codice  è responsabile della creazione e dell'avvio di processi paralleli per eseguire l'attacco di tipo flood (UDP o TCP) usando il numero di thread specificato dall'utente. Vediamo il funzionamento in dettaglio:
+
+1. for _ in range(args.threads):
+args.threads è un valore che viene passato come argomento alla riga di comando e rappresenta il numero di thread (processi) che il programma deve creare ed eseguire in parallelo.
+range(args.threads) genera una sequenza di numeri da 0 a args.threads - 1. Ogni numero della sequenza è usato per creare un nuovo processo.
+L'underscore (_) è una convenzione in Python per indicare che la variabile di loop non verrà utilizzata all'interno del ciclo. In questo caso, l'unica cosa che conta è ripetere il ciclo args.threads volte.
+Quindi, questo ciclo crea args.threads processi separati.
+
+2. Process(target=flood, args=(args.host, not args.tcp, args.port_from, args.port_to, args.packets, args.timeout)).start()
+Questa riga di codice è quella che effettivamente crea e avvia ogni singolo processo. 
+
+Process(...): La classe Process proviene dal modulo multiprocessing, che permette di eseguire più processi in parallelo. Ogni processo è un'unità di esecuzione separata che gira in modo indipendente.
+
+target=flood: Questo specifica la funzione che ogni processo dovrà eseguire. In questo caso, la funzione è flood, che è quella che si occupa di inviare pacchetti UDP (o TCP) alla destinazione.
+
+args=(...): La tupla args contiene i parametri che verranno passati alla funzione flood. I parametri includono:
+
+args.host: L'indirizzo IP della destinazione (preso dall'argomento della riga di comando).
+not args.tcp: Questo è un booleano che indica se usare UDP o TCP. Se l'argomento --tcp è presente nella riga di comando, args.tcp sarà True, quindi not args.tcp diventerà False, il che significa che il flood sarà eseguito con UDP. Se --tcp non è presente, allora args.tcp sarà False, quindi not args.tcp sarà True, e l'attacco sarà eseguito con UDP.
+args.port_from: La porta di partenza (intero, preso dalla riga di comando).
+args.port_to: La porta finale (intero, preso dalla riga di comando).
+args.packets: Il numero di pacchetti da inviare per ogni connessione (preso dalla riga di comando).
+args.timeout: Il timeout (in secondi), ossia il tempo massimo per cui il processo dovrà inviare pacchetti, prima di fermarsi (preso dalla riga di comando).
+.start(): Questo metodo avvia il processo. Quando start() viene chiamato, il processo esegue la funzione flood con i parametri passati in args. Ogni processo agisce in modo indipendente, permettendo di inviare pacchetti in parallelo tramite diversi thread (processi).
+
+Riepilogo del flusso
+Numero di thread: Il ciclo for viene eseguito args.threads volte, quindi crea un numero di processi uguale a args.threads.
+Creazione dei processi: Per ogni ciclo, viene creato un nuovo processo con la funzione flood come target, e i relativi argomenti (indirizzo IP, tipo di protocollo, porte, numero di pacchetti, timeout).
+Avvio dei processi: Ogni processo viene avviato con il metodo .start(), e ogni processo inizierà a eseguire la funzione flood indipendentemente.
+
+
+ 
+
+
